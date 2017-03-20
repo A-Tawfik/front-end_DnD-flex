@@ -6,7 +6,7 @@ var dragEl
 fetchDefaultData();
 
 function fetchDefaultData() {
-  fetch('http://api.fixer.io/latest')
+  fetch('https://api.fixer.io/latest')
   .then(function(response){
     response.json().then((data)=>{
       data.rates[data.base] = 1;
@@ -18,7 +18,7 @@ function fetchDefaultData() {
 }
 
 function updateData(base) {
-  fetch(`http://api.fixer.io/latest?base=${base}&symbols=${currencies.join()}`)
+  fetch(`https://api.fixer.io/latest?base=${base}&symbols=${currencies.join()}`)
   .then(function(response){
     response.json().then((data)=>{
       data.rates[data.base] = 1;
