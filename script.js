@@ -49,7 +49,6 @@ function makeBoxes(data) {
     newEl.classList.add("box");
     newEl.setAttribute("data-currency", currency);
     newEl.setAttribute("data-rate", data.rates[currency])
-    newEl.setAttribute("draggable", "true");
     newEl.addEventListener('dragstart', handleDragStart, false);
     newEl.addEventListener('dragenter', handleDragEnter, false);
     newEl.addEventListener('dragleave', handleDragLeave, false);
@@ -61,6 +60,7 @@ function makeBoxes(data) {
       newEl.style.order = 0
     }
     else {
+      newEl.setAttribute("draggable", "true");
       newEl.style.order = index + 1
     }
 
