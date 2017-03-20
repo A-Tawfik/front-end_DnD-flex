@@ -1,36 +1,57 @@
-
 var boxes
 var currencies
 var dragEl
 
-fetch('http://api.fixer.io/latest')
-.then(function(response){
-  response.json().then(function(data){
-    data.rates[data.base] = 1;
-    currencies = Object.keys(data.rates);
-    makeBoxes(data)
+
+fetchDefaultData();
+
+function fetchDefaultData() {
+  fetch('http://api.fixer.io/latest')
+  .then(function(response){
+    response.json().then((data)=>{
+      data.rates[data.base] = 1;
+      currencies = Object.keys(data.rates);
+      makeBoxes(data);
+      updateContainer();
+    });
   });
-})
+}
+
+function updateData(base) {
+  fetch(`http://api.fixer.io/latest?base=${base}&symbols=${currencies.join()}`)
+  .then(function(response){
+    response.json().then((data)=>{
+      data.rates[data.base] = 1;
+      currencies = Object.keys(data.rates);
+      makeBoxes(data);
+      updateContainer();
+    });
+  });
+}
 
 
 function makeBoxes(data) {
-  container = document.getElementsByClassName('container')[0]
-  boxes = currencies.map(function(currency, index) {
-    var newEl = document.createElement("div")
-    var elementText = document.createTextNode(currency + ": " + data.rates[currency])
+    boxes = currencies.map((currency, index)=> {
+    let newEl = document.createElement("div");
+    let header = document.createElement("div")
+    let content = document.createElement("span")
 
-    newEl.appendChild(elementText)
+    header.appendChild(document.createTextNode(currency));
+    content.appendChild(document.createTextNode(data.rates[currency]))
+    header.classList.add("header");
+    content.classList.add("rate");
 
-    newEl.classList.add("box")
-
-
-    newEl.setAttribute("draggable", "true")
-
+    newEl.appendChild(header);
+    newEl.appendChild(content);
+    newEl.classList.add("box");
+    newEl.setAttribute("data-currency", currency);
+    newEl.setAttribute("data-rate", data.rates[currency])
+    newEl.setAttribute("draggable", "true");
     newEl.addEventListener('dragstart', handleDragStart, false);
+    newEl.addEventListener('dragenter', handleDragEnter, false);
+    newEl.addEventListener('dragleave', handleDragLeave, false);
     newEl.addEventListener('dragover', handleDragOver, false);
     newEl.addEventListener('dragend', handleDragEnd, false);
-
-    container.appendChild(newEl)
 
     if (currency === data.base) {
       newEl.classList.add('base')
@@ -42,39 +63,101 @@ function makeBoxes(data) {
 
     return newEl
   })
+  return boxes
 }
 
 
+function updateContainer() {
+  let container = document.getElementsByClassName('container')[0]
+  container.innerHTML = '';
+  for (var i = 0; i < boxes.length; i++) {
+    container.appendChild(boxes[i])
+  }
+}
 
+
+function handleSortClick(e){
+  boxes.sort((a,b)=>{
+    if (a.getAttribute(e.target.name) -  b.getAttribute(e.target.name)) {
+      return a.getAttribute(e.target.name) - b.getAttribute(e.target.name)
+    }
+    else {
+      let codeA = a.getAttribute(e.target.name)
+      let codeB = b.getAttribute(e.target.name)
+      if (codeA < codeB) {return -1}
+      if (codeA > codeB) {return 1}
+      return 0
+    }
+  })
+
+  for (var i = 0; i < boxes.length; i++) {
+    if (boxes[i].classList.contains("base")) {
+      boxes[i].style.order = 0
+    }
+    else {
+      boxes[i].style.order = i+1
+    }
+  }
+}
 
 function handleDragStart(e) {
   dragEl = e.target
   dragEl.style.opacity = '.6';
-  var currentOrder = window.getComputedStyle(e.target).order
-  // debugger;
+  let currentOrder = window.getComputedStyle(e.target).order
     console.log("start:" + currentOrder)
 }
 
 function handleDragEnd(e) {
   dragEl.style.opacity = "1";
+  if (dragEl.style.order == 0) {
+    updateData(e.target.getAttribute("data-currency"))
+  }
 }
 
 function handleDragOver(e) {
+  e.preventDefault();
   overOrder = window.getComputedStyle(e.target).order
   draggingOrder = window.getComputedStyle(dragEl).order
-  if (dragEl == e.target){return false;}
 
+  if (!e.target.classList.contains("box")) {return false;}
+  if (dragEl == e.target){return false;}
   if (overOrder > draggingOrder){
-    e.target.style.order -= 1
+    boxes.map((box)=>{
+      if (box.style.order >= draggingOrder && box.style.order <= overOrder ) {
+        box.style.order = parseInt(box.style.order) - 1
+      }
+    });
   }
   else if (overOrder <= draggingOrder) {
-
-    e.target.style.order = parseInt(overOrder) + 1
+    boxes.map((box)=>{
+      if (box.style.order <= draggingOrder && box.style.order >= overOrder ) {
+        box.style.order = parseInt(box.style.order) + 1
+      }
+    });
   }
 
   dragEl.style.order = overOrder;
+}
 
 
-  console.log("drag over: " + overOrder )
-  console.log("drag el: " + draggingOrder)
+function handleDragEnter(e){
+  if (e.target.style.order === "0") {
+    e.target.classList.remove("base")
+  }
+  if (dragEl.style.order === "0") {
+    dragEl.classList.add("base")
+  } else {
+    dragEl.classList.remove("base")
+  }
+}
+
+function handleDragLeave(e){
+  if (e.target.style.order == "0") {
+    e.target.classList.add("base")
+  }
+  if (dragEl.style.order === "0") {
+    dragEl.classList.add("base")
+  } else {
+    dragEl.classList.remove("base")
+  }
 }
