@@ -8,8 +8,14 @@
   </head>
 
   <body>
-    <button type="button" name="data-rate" onclick="handleSortClick(event)">Sort by rate</button>
-    <button type="button" name="data-currency" onclick="handleSortClick(event)">Sort by code</button>
+    <div class="intro-stuff">
+      <p>
+        Below are current currency exchange rates from <a href="https://fixer.io">fixer.io</a>. You can organize each box by dragging and dropping the box to the desired location. If you drop on the first postion (top left), the base currency will be changed. 
+      </p>
+      <button type="button" class="sort-btn" name="data-rate" onclick="handleSortClick(event)">Sort by rate</button>
+      <button type="button" class="sort-btn" name="data-currency" onclick="handleSortClick(event)">Sort by code</button>
+      <button type="button" class="reset-btn" onclick="fetchDefaultData()">Reset</button>
+    </div>
     <div class="container"></div>
   </body>
 </html>

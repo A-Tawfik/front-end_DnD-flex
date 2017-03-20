@@ -2,7 +2,6 @@ var boxes
 var currencies
 var dragEl
 
-
 fetchDefaultData();
 
 function fetchDefaultData() {
@@ -29,14 +28,18 @@ function updateData(base) {
   });
 }
 
-
 function makeBoxes(data) {
     boxes = currencies.map((currency, index)=> {
     let newEl = document.createElement("div");
     let header = document.createElement("div")
     let content = document.createElement("span")
+    let closeBtn = document.createElement("span")
 
+    closeBtn.classList.add("close")
+    closeBtn.appendChild(document.createTextNode("X"))
+    closeBtn.addEventListener('click', handleClose);
     header.appendChild(document.createTextNode(currency));
+    header.appendChild(closeBtn);
     content.appendChild(document.createTextNode(data.rates[currency]))
     header.classList.add("header");
     content.classList.add("rate");
@@ -66,7 +69,6 @@ function makeBoxes(data) {
   return boxes
 }
 
-
 function updateContainer() {
   let container = document.getElementsByClassName('container')[0]
   container.innerHTML = '';
@@ -74,7 +76,6 @@ function updateContainer() {
     container.appendChild(boxes[i])
   }
 }
-
 
 function handleSortClick(e){
   boxes.sort((a,b)=>{
@@ -135,10 +136,8 @@ function handleDragOver(e) {
       }
     });
   }
-
   dragEl.style.order = overOrder;
 }
-
 
 function handleDragEnter(e){
   if (e.target.style.order === "0") {
@@ -160,4 +159,11 @@ function handleDragLeave(e){
   } else {
     dragEl.classList.remove("base")
   }
+}
+
+function handleClose(e) {
+  let parentBox = e.target.closest('.box')
+  let code = parentBox.getAttribute("data-currency")
+  parentBox.remove()
+  currencies.splice(currencies.indexOf(code), 1)
 }
